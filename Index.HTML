@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flexible 3D Rotating Model</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Default cube geometry
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+
+        // Default material
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 1 });
+        const house = new THREE.Mesh(geometry, material);
+        scene.add(house);
+
+        camera.position.z = 5;
+
+        // Dat.gui controls
+        const gui = new dat.GUI();
+        const controls = {
+            rotationSpeed: 0.01,
+            color: 0x00ff00,
+            opacity: 1,
+            scaleX: 1,
+            scaleY: 1,
+            scaleZ: 1,
+            shape: 'box',
+            rotateX: true, // Default: Rotation on the X-axis is enabled.
+        };
+
+        // Add GUI controls
+
+   let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+      
+        gui.add(controls, 'rotationSpeed', 0.001, 0.1);
+        gui.addColor(controls, 'color').onChange((color) => {
+            house.material.color.setHex(color);
+        });
+        gui.add(controls, 'opacity', 0, 1).onChange((value) => {
+            house.material.opacity = value;
+        });
+        gui.add(controls, 'scaleX', 0.1, 2).onChange((value) => {
+            house.scale.x = value;
+        });
+        gui.add(controls, 'scaleY', 0.1, 2).onChange((value) => {
+            house.scale.y = value;
+        });
+        gui.add(controls, 'scaleZ', 0.1, 2).onChange((value) => {
+            house.scale.z = value;
+        });
+        gui.add(controls, 'shape', ['box', 'sphere', 'cone']).onChange((value) => {
+            scene.remove(house);
+            switch (value) {
+                case 'box':
+                    house.geometry = new THREE.BoxGeometry();
+                    break;
+                case 'sphere':
+                    house.geometry = new THREE.SphereGeometry();
+                    break;
+                case 'cone':
+                    house.geometry = new THREE.ConeGeometry();
+                    break;
+            }
+            scene.add(house);
+        });
+        gui.add(controls, 'rotateX').onChange((value) => {
+            controls.rotateX = value; // Make sure the state is correctly updated.
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Update rotation speed from GUI control
+            if (controls.rotateX) {
+                house.rotation.x += controls.rotationSpeed;
+            }
+            house.rotation.y += controls.rotationSpeed;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
